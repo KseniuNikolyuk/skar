@@ -8,8 +8,11 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "pytest (>=8.3.4,<9.0.0)"
 ]
 
+[tool.poetry.dependencies]
+python = "^3.13"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -21,6 +24,11 @@ flake8 = "^7.1.1"
 isort = "^5.13.2"
 mypy = "^1.14.1"
 
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+pytest-cov = "^6.0.0"
+
 [tool.black]
 line_length = 119
 exclude = ".git"
@@ -28,7 +36,7 @@ exclude = ".git"
 [tool.isort]
 line_length = 119
 
-[tool.mypu]
+[tool.mypy]
 disallow_untyped_defs = true
 warn_return_any = true
 exclude = 'venv'
