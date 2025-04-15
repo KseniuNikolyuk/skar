@@ -1,36 +1,49 @@
-from unittest.mock import mock_open, patch
+import pytest
+import json
+import os
+from tempfile import NamedTemporaryFile
 from src.utils import load_transactions
 
 
-# Тест: файл не существует
-@patch("os.path.exists", return_value=False)
-def test_load_transactions_file_not_exists(mock_exists):
-    result = load_transactions("nonexistent.json")
+
+def test_load_transactions_valid():
+    data = [{"amount": 100}, {"amount": 200}]
+    with NamedTemporaryFile(mode="w", delete=False, suffix=".json", encoding="utf-8") as temp_file:
+        json.dump(data, temp_file)
+        temp_file_path = temp_file.name
+
+    try:
+        result = load_transactions(temp_file_path)
+        assert result == data
+    finally:
+        os.remove(temp_file_path)
+
+
+def test_load_transactions_file_not_exists():
+    result = load_transactions("non_existent_file.json")
     assert result == []
 
 
-# Тест: невалидный JSON
-@patch("os.path.exists", return_value=True)
-@patch("builtins.open", new_callable=mock_open, read_data="not a json")
-def test_load_transactions_invalid_json(mock_file, mock_exists):
-    result = load_transactions("invalid.json")
-    assert result == []
+def test_load_transactions_invalid_json():
+    with NamedTemporaryFile(mode="w", delete=False, suffix=".json", encoding="utf-8") as temp_file:
+        temp_file.write("невалидный json")  # специально портили JSON
+        temp_file_path = temp_file.name
+
+    try:
+        result = load_transactions(temp_file_path)
+        assert result == []
+    finally:
+        os.remove(temp_file_path)
 
 
-# Тест: JSON не список
-@patch("os.path.exists", return_value=True)
-@patch("builtins.open", new_callable=mock_open, read_data='{"key": "value"}')
-def test_load_transactions_not_a_list(mock_file, mock_exists):
-    result = load_transactions("notalist.json")
-    assert result == []
+def test_load_transactions_not_a_list():
+    data = {"amount": 100}
+    with NamedTemporaryFile(mode="w", delete=False, suffix=".json", encoding="utf-8") as temp_file:
+        json.dump(data, temp_file)
+        temp_file_path = temp_file.name
 
-
-# Тест: корректный список транзакций
-@patch("os.path.exists", return_value=True)
-@patch("builtins.open", new_callable=mock_open, read_data='[{"id": 1}, {"id": 2}]')
-def test_load_transactions_success(mock_file, mock_exists):
-    result = load_transactions("transactions.json")
-    assert isinstance(result, list)
-    assert len(result) == 2
-    assert result[0]["id"] == 1
-    assert result[1]["id"] == 2
+    try:
+        result = load_transactions(temp_file_path)
+        assert result == []
+    finally:
+        os.remove(temp_file_path)
