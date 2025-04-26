@@ -1,9 +1,8 @@
-import pytest
+
 import json
 import os
 from tempfile import NamedTemporaryFile
 from src.utils import load_transactions
-
 
 
 def test_load_transactions_valid():
@@ -47,3 +46,4 @@ def test_load_transactions_not_a_list():
         assert result == []
     finally:
         os.remove(temp_file_path)
+
