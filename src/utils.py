@@ -1,6 +1,8 @@
 import json
 import os
 import logging
+import re
+from collections import Counter
 
 logger = logging.getLogger(__name__)
 
@@ -33,30 +35,28 @@ def load_transactions(file_path: str) -> list:
         logger.error(f"Ошибка при чтении JSON: {e}")
         return []
 
-import re
-def banking_operations(transactions, search_text):
-    pattern = re.compile(re.escape(search_text), re.IGNORECASE)
-    result = []
 
-    for transaction in transactions:
-        description = transaction.get('description', '')
-        if pattern.search(description):
-            result.append(transaction)
-
-    return result
+def banking_operations(transaction, search):
+    pattern = re.compile(search, re.IGNORECASE)
+    return [t for t in transaction if "description" in t and pattern.search(t["description"])]
 
 
 def categories_of_operations(operations, categories):
-    result = {category: 0 for category in categories}
+    pattern = re.compile("|".join(categories), re.IGNORECASE)
+    tt = []
+    for i in operations:
+        try:
+            if re.search(pattern, i["description"]):
+                tt.append(i["description"])
+        except (KeyError, TypeError, ValueError):
+            continue
 
-    for operation in operations:
-        description = operation.get('description', '')
-        for category in categories:
+    compbined = " ".join(tt)
+    matches = re.findall(pattern, compbined)
+    counter = Counter(matches)
 
-            if re.search(re.escape(category), description, re.IGNORECASE):
-                result[category] += 1
+    return dict(counter)
 
-    return result
 
 def filter_state(transaction, state):
     pattern = re.compile(state, re.IGNORECASE)
